@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class TileScript : MonoBehaviour
 {
-    public bool isSelected = false;
-
     public int x, y;
 
     private static Color selectedColor = new Color(.5f, .5f, .5f, 1.0f);
@@ -26,12 +24,10 @@ public class TileScript : MonoBehaviour
     }
 
     public void Select() {
-        isSelected = true;
         render.color = selectedColor;
     }
 
     public void Deselect() {
-        isSelected = false;
         render.color = Color.white;
     }
 
