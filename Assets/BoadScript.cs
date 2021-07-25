@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class BoadScript : MonoBehaviour
 {
@@ -54,6 +55,38 @@ public class BoadScript : MonoBehaviour
         }
     }
 
+    private List<List<GameObject>> GetPreviousMatches(int x, int y) {
+        List<List<GameObject>> matches = new List<List<GameObject>>();
+        Sprite thisSprite = tiles[x, y].GetComponent<SpriteRenderer>().sprite;
+        if (thisSprite != null) {
+            List<GameObject> xDestroy = new List<GameObject>(new GameObject[] { tiles[x, y] });
+            List<GameObject> yDestroy = new List<GameObject>(new GameObject[] { tiles[x, y] });
+
+            for (int diff = 1; diff < 3; diff++) {
+                int yDiff = y-diff;
+                if (yDiff > -1) {
+                    GameObject yGO = tiles[x, yDiff];
+                    Sprite ySprite = yGO.GetComponent<SpriteRenderer>().sprite;
+                    if (thisSprite == ySprite) {
+                        yDestroy.Add(yGO);
+                    }
+                }
+
+                int xDiff = x-diff;
+                if (xDiff > -1) {
+                    GameObject xGO = tiles[xDiff, y];
+                    Sprite xSprite = xGO.GetComponent<SpriteRenderer>().sprite;
+                    if (thisSprite == xSprite) {
+                        xDestroy.Add(xGO);
+                    }
+                }
+            }
+            matches.Add(xDestroy);
+            matches.Add(yDestroy);
+        }
+        return matches;
+    }
+
     /**
      * Destroys all matches in the board
      *
@@ -67,49 +100,13 @@ public class BoadScript : MonoBehaviour
         for (int x = 0; x < xCount; x++) {
             for (int y = 0; y < yCount; y++) {
 
-                Sprite thisSprite = tiles[x, y].GetComponent<SpriteRenderer>().sprite;
+                List<List<GameObject>> matches = GetPreviousMatches(x, y);
 
-                if (thisSprite != null) {
-
-                    List<GameObject> xDestroy = new List<GameObject>(new GameObject[] { tiles[x, y] });
-                    List<GameObject> yDestroy = new List<GameObject>(new GameObject[] { tiles[x, y] });
-
-                    for (int diff = 1; diff < 3; diff++) {
-                        int yDiff = y-diff;
-                        if (yDiff > -1) {
-                            GameObject yGO = tiles[x, yDiff];
-                            Sprite ySprite = yGO.GetComponent<SpriteRenderer>().sprite;
-                            if (thisSprite == ySprite) {
-                                yDestroy.Add(yGO);
-                            }
-                        }
-
-                        int xDiff = x-diff;
-                        if (xDiff > -1) {
-                            GameObject xGO = tiles[xDiff, y];
-                            Sprite xSprite = xGO.GetComponent<SpriteRenderer>().sprite;
-                            if (thisSprite == xSprite) {
-                                xDestroy.Add(xGO);
-                            }
-                        }
-
-                    }
-
-                    if (xDestroy.Count == 3) {
-                        destroyedThings = true;
-                        foreach (GameObject go in xDestroy) {
-                            go.GetComponent<SpriteRenderer>().sprite = null;
-                        }
-                    }
-
-                    if (yDestroy.Count== 3) {
-                        destroyedThings = true;
-                        foreach (GameObject go in yDestroy) {
-                            go.GetComponent<SpriteRenderer>().sprite = null;
-                        }
-                    }
-
-                }
+                matches.Where(match => match.Count == 3).ToList().ForEach(match => {
+                    match.ForEach(go => {
+                        go.GetComponent<SpriteRenderer>().sprite = null;
+                    });
+                });
 
             }
         }
