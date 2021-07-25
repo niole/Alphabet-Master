@@ -62,55 +62,116 @@ public class BoadScript : MonoBehaviour
      * At each tile, look back three horiz and vert, destroy if match found
      */
     void DestroyMatches() {
+        bool destroyedThings = false;
+
         for (int x = 0; x < xCount; x++) {
             for (int y = 0; y < yCount; y++) {
 
                 Sprite thisSprite = tiles[x, y].GetComponent<SpriteRenderer>().sprite;
 
-                List<GameObject> xDestroy = new List<GameObject>(new GameObject[] { tiles[x, y] });
-                List<GameObject> yDestroy = new List<GameObject>(new GameObject[] { tiles[x, y] });
+                if (thisSprite != null) {
 
-                for (int diff = 1; diff < 3; diff++) {
-                    int yDiff = y-diff;
-                    if (yDiff > -1) {
-                        GameObject yGO = tiles[x, yDiff];
-                        Sprite ySprite = yGO.GetComponent<SpriteRenderer>().sprite;
-                        if (thisSprite == ySprite) {
-                            yDestroy.Add(yGO);
+                    List<GameObject> xDestroy = new List<GameObject>(new GameObject[] { tiles[x, y] });
+                    List<GameObject> yDestroy = new List<GameObject>(new GameObject[] { tiles[x, y] });
+
+                    for (int diff = 1; diff < 3; diff++) {
+                        int yDiff = y-diff;
+                        if (yDiff > -1) {
+                            GameObject yGO = tiles[x, yDiff];
+                            Sprite ySprite = yGO.GetComponent<SpriteRenderer>().sprite;
+                            if (thisSprite == ySprite) {
+                                yDestroy.Add(yGO);
+                            }
+                        }
+
+                        int xDiff = x-diff;
+                        if (xDiff > -1) {
+                            GameObject xGO = tiles[xDiff, y];
+                            Sprite xSprite = xGO.GetComponent<SpriteRenderer>().sprite;
+                            if (thisSprite == xSprite) {
+                                xDestroy.Add(xGO);
+                            }
+                        }
+
+                    }
+
+                    if (xDestroy.Count == 3) {
+                        destroyedThings = true;
+                        foreach (GameObject go in xDestroy) {
+                            go.GetComponent<SpriteRenderer>().sprite = null;
                         }
                     }
 
-                    int xDiff = x-diff;
-                    if (xDiff > -1) {
-                        GameObject xGO = tiles[xDiff, y];
-                        Sprite xSprite = xGO.GetComponent<SpriteRenderer>().sprite;
-                        if (thisSprite == xSprite) {
-                            xDestroy.Add(xGO);
+                    if (yDestroy.Count== 3) {
+                        destroyedThings = true;
+                        foreach (GameObject go in yDestroy) {
+                            go.GetComponent<SpriteRenderer>().sprite = null;
                         }
                     }
 
-                }
-
-                if (xDestroy.Count == 3) {
-                    foreach (GameObject go in xDestroy) {
-                        go.GetComponent<SpriteRenderer>().sprite = null;
-                    }
-                }
-
-                if (yDestroy.Count== 3) {
-                    foreach (GameObject go in yDestroy) {
-                        go.GetComponent<SpriteRenderer>().sprite = null;
-                    }
                 }
 
             }
         }
 
+        ShiftDown();
         RefillBoard();
+
+        if (destroyedThings) {
+            DestroyMatches();
+        }
     }
 
+    /**
+     * Shifts the tiles down in the board in order to fill holes in the middle of the board
+     *
+     * Starts at the bottom, goes column by column, if it finds a hole, it goes up until it sees a tile
+     * that has a sprite, and then swaps with empty spot
+     *
+     * two indexes: the next empty one, the next full one, if no next full one, because all empty
+     * or we hit the top, we move on to the next column
+     */
+    void ShiftDown() {
+        for (int col = 0; col < xCount; col++) {
+            int emptyIndex = 0;
+            int fullIndex = 0;
+            while (emptyIndex < (yCount-1) && fullIndex < yCount) {
+                // only continue if emptyIndex can swap with fullIndex
+
+                while(emptyIndex < (yCount-1) && tiles[col, emptyIndex].GetComponent<SpriteRenderer>().sprite != null) {
+                    // look for an empty tile
+                    // look until you find one or run off the board
+                    emptyIndex++;
+                }
+
+                fullIndex = emptyIndex + 1;
+                while (fullIndex < (yCount-1) && tiles[col, fullIndex].GetComponent<SpriteRenderer>().sprite == null) {
+                    // look for a full tile that is higher up than empty tile
+                    // look until you find one or run off the board
+                    fullIndex++;
+                }
+
+                if (fullIndex < yCount && emptyIndex < yCount) {
+                    // if neither indexes have run off of the board,
+                    // then we can do a shift swap
+
+                    if (tiles[col, emptyIndex].GetComponent<SpriteRenderer>().sprite == null && tiles[col, fullIndex].GetComponent<SpriteRenderer>().sprite != null) {
+                        // switch
+                        tiles[col, emptyIndex].GetComponent<SpriteRenderer>().sprite = tiles[col, fullIndex].GetComponent<SpriteRenderer>().sprite;
+                        tiles[col, fullIndex].GetComponent<SpriteRenderer>().sprite = null;
+                    }
+
+                }
+
+                emptyIndex++;
+            }
+        }
+    }
+
+    /**
+     * Refills the holes in the top of the board
+     */
     void RefillBoard() {
-        // TODO
     }
 
     void CreateBoard() {
@@ -139,6 +200,6 @@ public class BoadScript : MonoBehaviour
     }
 
     Sprite GetRandomLetter() {
-        return letters[Random.Range(0, 3)];
+        return letters[Random.Range(0, letters.Count - 1)];
     }
 }
