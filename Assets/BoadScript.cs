@@ -169,9 +169,17 @@ public class BoadScript : MonoBehaviour
     }
 
     /**
-     * Refills the holes in the top of the board
+     * Refills the holes in the top of the board with random letters
      */
     void RefillBoard() {
+        for (int x = 0; x < xCount; x++) {
+            for (int y = 0; y < yCount; y++) {
+                SpriteRenderer go = tiles[x, y].GetComponent<SpriteRenderer>();
+                if (go.sprite == null) {
+                    go.sprite = GetRandomLetter();
+                }
+            }
+        }
     }
 
     void CreateBoard() {
