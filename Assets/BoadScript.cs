@@ -47,9 +47,70 @@ public class BoadScript : MonoBehaviour
             } else {
                 selectedTile = (x, y);
             }
+
             otherTile.GetComponent<TileScript>().Deselect();
 
+            DestroyMatches();
         }
+    }
+
+    /**
+     * Destroys all matches in the board
+     *
+     * if there is a 3 vertical or horizontal match, destroy
+     *
+     * At each tile, look back three horiz and vert, destroy if match found
+     */
+    void DestroyMatches() {
+        for (int x = 0; x < xCount; x++) {
+            for (int y = 0; y < yCount; y++) {
+
+                Sprite thisSprite = tiles[x, y].GetComponent<SpriteRenderer>().sprite;
+
+                List<GameObject> xDestroy = new List<GameObject>(new GameObject[] { tiles[x, y] });
+                List<GameObject> yDestroy = new List<GameObject>(new GameObject[] { tiles[x, y] });
+
+                for (int diff = 1; diff < 3; diff++) {
+                    int yDiff = y-diff;
+                    if (yDiff > -1) {
+                        GameObject yGO = tiles[x, yDiff];
+                        Sprite ySprite = yGO.GetComponent<SpriteRenderer>().sprite;
+                        if (thisSprite == ySprite) {
+                            yDestroy.Add(yGO);
+                        }
+                    }
+
+                    int xDiff = x-diff;
+                    if (xDiff > -1) {
+                        GameObject xGO = tiles[xDiff, y];
+                        Sprite xSprite = xGO.GetComponent<SpriteRenderer>().sprite;
+                        if (thisSprite == xSprite) {
+                            xDestroy.Add(xGO);
+                        }
+                    }
+
+                }
+
+                if (xDestroy.Count == 3) {
+                    foreach (GameObject go in xDestroy) {
+                        go.GetComponent<SpriteRenderer>().sprite = null;
+                    }
+                }
+
+                if (yDestroy.Count== 3) {
+                    foreach (GameObject go in yDestroy) {
+                        go.GetComponent<SpriteRenderer>().sprite = null;
+                    }
+                }
+
+            }
+        }
+
+        RefillBoard();
+    }
+
+    void RefillBoard() {
+        // TODO
     }
 
     void CreateBoard() {

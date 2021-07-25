@@ -23,6 +23,14 @@ public class TileScript : MonoBehaviour
         otherTile.GetComponent<SpriteRenderer>().sprite = thisSprite;
     }
 
+    public void Destroy() {
+        GetComponent<SpriteRenderer>().sprite = null;
+    }
+
+    public void SetSprite(Sprite sprite) {
+        GetComponent<SpriteRenderer>().sprite = sprite;
+    }
+
     public void Select() {
         render.color = selectedColor;
     }
