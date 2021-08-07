@@ -173,7 +173,7 @@ public class BoadScript : MonoBehaviour
             for (int y = 0; y < yCount; y++) {
                 SpriteRenderer go = tiles[x, y].GetComponent<SpriteRenderer>();
                 if (go.sprite == null) {
-                    go.sprite = GetRandomLetter();
+                    go.sprite = GetRandomLetter(x, y);
                 }
             }
         }
@@ -198,13 +198,27 @@ public class BoadScript : MonoBehaviour
 
                 GameObject newTile = Instantiate(tileBase, tileLocation, tileBase.transform.rotation);
                 newTile.GetComponent<TileScript>().InitXY(x, y);
-                newTile.GetComponent<SpriteRenderer>().sprite = GetRandomLetter();
+                newTile.GetComponent<SpriteRenderer>().sprite = GetRandomLetter(x, y);
                 tiles[x, y] = newTile;
             }
         }
     }
 
-    Sprite GetRandomLetter() {
-        return letters[Random.Range(0, letters.Count - 1)];
+    Sprite GetRandomLetter(int x, int y) {
+        List<Sprite> unSelectableLetters = new List<(int First, int Second)>(new (int First, int Second)[]{
+            (x-1, y),
+            (x+1, y),
+            (x, y-1),
+            (x, y+1)
+        })
+        .Where(l => l.First >= 0 && l.First < xCount && l.Second >= 0 && l.Second < yCount)
+        .Select(l => tiles[l.First, l.Second])
+        .Where(tile => tile != null && tile.GetComponent<SpriteRenderer>().sprite != null)
+        .Select(tile => tile.GetComponent<SpriteRenderer>().sprite)
+        .ToList();
+
+        List<Sprite> selectableLetters = letters.Where(letter => !unSelectableLetters.Contains(letter)).ToList();
+
+        return selectableLetters[Random.Range(0, selectableLetters.Count - 1)];
     }
 }
