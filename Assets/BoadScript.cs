@@ -103,6 +103,7 @@ public class BoadScript : MonoBehaviour
                 List<List<GameObject>> matches = GetPreviousMatches(x, y);
 
                 matches.Where(match => match.Count == 3).ToList().ForEach(match => {
+                    destroyedThings = true;
                     match.ForEach(go => {
                         go.GetComponent<SpriteRenderer>().sprite = null;
                     });
@@ -111,10 +112,9 @@ public class BoadScript : MonoBehaviour
             }
         }
 
-        ShiftDown();
-        RefillBoard();
-
         if (destroyedThings) {
+            ShiftDown();
+            RefillBoard();
             DestroyMatches();
         }
     }
