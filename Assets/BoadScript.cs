@@ -204,6 +204,10 @@ public class BoadScript : MonoBehaviour
         }
     }
 
+    /**
+     * Gets a random letter such that no vertically or horizontally adjacent letters
+     * are the same
+     */
     Sprite GetRandomLetter(int x, int y) {
         List<Sprite> unSelectableLetters = new List<(int First, int Second)>(new (int First, int Second)[]{
             (x-1, y),
